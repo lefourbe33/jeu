@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Pong Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script src="game.js"></script>
+</body>
+</html>
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #000;
+}
+
+canvas {
+    border: 2px solid #fff;
+    background-color: #000;
+}
+const canvas = document.getElementById('gameCanvas');
+const context = canvas.getContext('2d');
+
+canvas.width = 800;
+canvas.height = 400;
+
+const paddleWidth = 10;
+const paddleHeight = 100;
+const ballRadius = 10;
+
+let paddleY = (canvas.height - paddleHeight) / 2;
+let ballX = canvas.width / 2;
+let ballY = canvas.height / 2;
+let ballSpeedX = 5;
+let ballSpeedY = 5;
+
+function drawRect(x, y, width, height, color) {
+    context.fillStyle = color;
+    context.fillRect(x, y, width, height);
+}
+
+function drawCircle(x, y, radius, color) {
+    context.fillStyle = color;
+    context.beginPath();
+    context.arc(x, y, radius, 0, Math.PI * 2, true);
+    context.closePath();
+    context.fill();
+}
+
+function drawNet() {
+    for (let i = 0; i < canvas.height; i += 40) {
+        drawRect(canvas.width / 2 - 1, i, 2, 20, 'white');
+    }
+}
+
+function draw() {
+    drawRect(0, 0, canvas.width, canvas.height, 'black');
+    drawNet();
+    drawRect(0, paddleY, paddleWidth, paddleHeight, 'white');
+    drawCircle(ballX, ballY, ballRadius, 'white');
+}
+
+function moveBall() {
+    ballX += ballSpeedX;
+    ballY += ballSpeedY;
+
+    if (ballY + ballRadius > canvas.height || ballY - ballRadius < 0) {
+        ballSpeedY = -ballSpeedY;
+    }
+
+    if (ballX - ballRadius < paddleWidth) {
+        if (ballY > paddleY && ballY < paddleY + paddleHeight) {
+            ballSpeedX = -ballSpeedX;
+        } else {
+            ballX = canvas.width / 2;
+            ballY = canvas.height / 2;
+            ballSpeedX = 5;
+            ballSpeedY = 5;
+        }
+    }
+
+    if (ballX + ballRadius > canvas.width) {
+        ballSpeedX = -ballSpeedX;
+    }
+}
+
+function movePaddle(evt) {
+    const rect = canvas.getBoundingClientRect();
+    const root = document.documentElement;
+    let mouseY = evt.clientY - rect.top - root.scrollTop;
+    paddleY = mouseY - paddleHeight / 2;
+}
+
+canvas.addEventListener('mousemove', movePaddle);
+
+function gameLoop() {
+    moveBall();
+    draw();
+}
+
+setInterval(gameLoop, 1000 / 60);
